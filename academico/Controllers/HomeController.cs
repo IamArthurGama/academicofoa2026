@@ -20,6 +20,12 @@ namespace academico.Controllers
 
         public IActionResult Privacy()
         {
+            ViewData["Message"] = "Politicas de usuário";
+            return View();
+        }
+
+        public IActionResult Welcome()
+        {
             return View();
         }
 
