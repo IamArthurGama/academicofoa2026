@@ -20,8 +20,7 @@ namespace academico.Models
         [Required]
         [Display(Name = "Telefone")]
         [DataType(DataType.PhoneNumber)]
-        [RegularExpression(@"^
-?\s?\d{4,5}-\d{4}$", ErrorMessage = "Telefone inválido. Use (99) 99999-9999 ou (99) 9999-9999.")]
+        //[RegularExpression(@"^\(?([1-9]{2})\)? ?(?:9[0-9]|[2-8])[0-9]{3}\-?[0-9]{4}$", ErrorMessage = "Telefone inválido. Use (99) 99999-9999 ou (99) 9999-9999.")]
         public string Telefone { get; set; } = string.Empty;
 
         [Required]
