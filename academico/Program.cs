@@ -10,6 +10,7 @@ builder.Services.AddControllersWithViews();
 
 var connectionString = builder.Configuration.GetConnectionString("AcademicoDbConnection");
 builder.Services.AddDbContext<AcademicoContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddScoped<IAlunoRepository, AlunoRepository>();
 
 var app = builder.Build();
 
@@ -34,11 +35,13 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<AcademicoContext>();
-        AcademicoDbInitializer.Initialize(context);
-    }catch (Exception ex) { 
-    var logger = services.GetRequiredService<ILogger<Program>>();
+        await AcademicoDbInitializer.InitializeAsync(context);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "Erro ao popular o banco de dados.");
     }
-}   
+}
 
 app.Run();

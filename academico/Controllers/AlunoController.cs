@@ -1,85 +1,67 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using academico.Models;
 using academico.Repositories;
-using System.Threading.Tasks;
-using academico.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace academico.Controllers
 {
     public class AlunoController : Controller
     {
-        private readonly AcademicoContext _context;
-        public AlunoController(AcademicoContext context)
+        private readonly IAlunoRepository _alunoRepository;
+
+        public AlunoController(IAlunoRepository alunoRepository)
         {
-            _context = context;
+            _alunoRepository = alunoRepository;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
-            return View(await _context.Alunos.OrderBy(a => a.Nome).ToListAsync());
+            var alunos = await _alunoRepository.GetAllAsync(cancellationToken);
+            return View(alunos);
         }
-        private static List<Aluno> alunos = new List<Aluno>()
-        {
-            new Aluno
-            {
-                AlunoId = 1,
-                Nome = "Aluno Teste",
-                Email = "aluno@mail.com",
-                Telefone = "(99) 99999-9999",
-                Endereco = "Rua Teste, Numero 123",
-                Complemento = "Casa",
-                Bairro = "Centro",
-                Municipio = "Cidade Teste",
-                Uf = "ST",
-                Cep = "99999-999"
-            }
-        };
 
-
-        public async Task<IActionResult> Create()
+        public IActionResult Create()
         {
             return View(new Aluno());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Nome", "Email", "Telefone", "Endereco", "Complemento", "Bairro", "Municipio", "Uf", "Cep")] Aluno aluno)
+        public async Task<IActionResult> Create([Bind("Nome,Email,Telefone,Endereco,Complemento,Bairro,Municipio,Uf,Cep")] Aluno aluno, CancellationToken cancellationToken)
         {
+            if (!ModelState.IsValid)
+            {
+                return View(aluno);
+            }
+
             try
             {
-                if (ModelState.IsValid)
-                {
-                    _context.Add(aluno);
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index));
-                }
+                await _alunoRepository.CreateAsync(aluno, cancellationToken);
+                return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex) {
-                ModelState.AddModelError("", "Não foi possivel inserir os dados.");
+            catch (DbUpdateException)
+            {
+                ModelState.AddModelError(string.Empty, "Não foi possível inserir os dados.");
             }
 
             return View(aluno);
         }
 
-
-        public async Task<IActionResult> Edit(int id)
+        public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-            var aluno = await _context.Alunos.FindAsync(id);
+            var aluno = await _alunoRepository.GetByIdAsync(id, cancellationToken);
+
             if (aluno == null)
             {
                 return NotFound();
             }
+
             return View(aluno);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("AlunoId", "Nome", "Email", "Telefone", "Endereco", "Complemento", "Bairro", "Municipio", "Uf", "Cep")] Aluno aluno)
+        public async Task<IActionResult> Edit(int id, [Bind("AlunoId,Nome,Email,Telefone,Endereco,Complemento,Bairro,Municipio,Uf,Cep")] Aluno aluno, CancellationToken cancellationToken)
         {
             if (id != aluno.AlunoId)
             {
@@ -88,61 +70,60 @@ namespace academico.Controllers
 
             if (!ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(aluno);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AlunoExists(aluno.AlunoId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                return View(aluno);
+            }
+
+            try
+            {
+                await _alunoRepository.EditAsync(aluno, cancellationToken);
                 return RedirectToAction(nameof(Index));
             }
-            return View(aluno);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await _alunoRepository.ExistsAsync(aluno.AlunoId, cancellationToken))
+                {
+                    return NotFound();
+                }
+
+                throw;
+            }
         }
 
-        public bool AlunoExists(int id)
+        public async Task<IActionResult> Details(int id, CancellationToken cancellationToken)
         {
-            return _context.Alunos.Any(e => e.AlunoId == id);
-        }
+            var aluno = await _alunoRepository.GetByIdAsync(id, cancellationToken);
 
-
-        public async Task<IActionResult> Details(int id)
-        {
-            var aluno = await _context.Alunos.SingleOrDefaultAsync(a => a.AlunoId == id);
             if (aluno == null)
             {
                 return NotFound();
             }
+
             return View(aluno);
         }
 
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
-            var aluno = await _context.Alunos.SingleOrDefaultAsync(a => a.AlunoId == id);
+            var aluno = await _alunoRepository.GetByIdAsync(id, cancellationToken);
+
             if (aluno == null)
             {
                 return NotFound();
             }
+
             return View(aluno);
         }
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id, CancellationToken cancellationToken)
         {
-            var aluno = await _context.Alunos.FindAsync(id);
-            _context.Alunos.Remove(aluno);
-            await _context.SaveChangesAsync();
+            if (!await _alunoRepository.ExistsAsync(id, cancellationToken))
+            {
+                return NotFound();
+            }
+
+            await _alunoRepository.DeleteAsync(id, cancellationToken);
             return RedirectToAction(nameof(Index));
         }
-    };
+    }
 }

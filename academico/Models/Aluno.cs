@@ -20,11 +20,13 @@ namespace academico.Models
         [Required]
         [Display(Name = "Telefone")]
         [DataType(DataType.PhoneNumber)]
+        [StringLength(20)]
         //[RegularExpression(@"^\(?([1-9]{2})\)? ?(?:9[0-9]|[2-8])[0-9]{3}\-?[0-9]{4}$", ErrorMessage = "Telefone inválido. Use (99) 99999-9999 ou (99) 9999-9999.")]
         public string Telefone { get; set; } = string.Empty;
 
         [Required]
         [StringLength(200)]
+        [Display(Name = "Endereço")]
         public string Endereco { get; set; } = string.Empty;
 
         // Complemento é opcional
@@ -49,6 +51,7 @@ namespace academico.Models
         [Required]
         [Display(Name = "CEP")]
         [DataType(DataType.PostalCode)]
+        [StringLength(9, MinimumLength = 9)]
         [RegularExpression(@"^\d{5}-\d{3}$", ErrorMessage = "CEP inválido. Use 99999-999.")]
         public string Cep { get; set; } = string.Empty;
     }

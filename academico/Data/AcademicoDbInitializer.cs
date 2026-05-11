@@ -1,27 +1,37 @@
 ﻿using academico.Models;
+using Microsoft.EntityFrameworkCore;
+
 namespace academico.Data
 {
     public class AcademicoDbInitializer
     {
-        public static void Initialize(AcademicoContext context)
+        public static async Task InitializeAsync(AcademicoContext context)
         {
-            context.Database.EnsureCreated();
-            if (context.Alunos.Any())
+            await context.Database.MigrateAsync();
+
+            if (await context.Alunos.AnyAsync())
             {
                 return;
             }
+
             var alunos = new Aluno[]
             {
                 new Aluno
                 {
-                    Nome = "AlunoTeste", Email = "alunoTeste@mail.com", Telefone = "999999999", Endereco = "Rua Teste", Complemento = "Casa", Bairro = "Bairro Teste", Municipio = "Municipio Teste", Uf = "UF", Cep = "999999"
+                    Nome = "Aluno Teste",
+                    Email = "alunoTeste@mail.com",
+                    Telefone = "(99) 99999-9999",
+                    Endereco = "Rua Teste",
+                    Complemento = "Casa",
+                    Bairro = "Bairro Teste",
+                    Municipio = "Municipio Teste",
+                    Uf = "RJ",
+                    Cep = "99999-999"
                 }
             };
-            foreach (Aluno aluno in alunos)
-            {
-                context.Alunos.Add(aluno);
-                context.SaveChanges();
-            }
+
+            await context.Alunos.AddRangeAsync(alunos);
+            await context.SaveChangesAsync();
         }
     }
 }

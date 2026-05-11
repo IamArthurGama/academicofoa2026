@@ -1,5 +1,4 @@
 ﻿using academico.Models;
-using academico.Repositories;
 
 namespace academico.Repositories
 {
@@ -9,32 +8,34 @@ namespace academico.Repositories
         private int _nextId = 1;
         private readonly object _lock = new object();
 
-        public InMemoryAlunoRepository() {
-        _alunos.Add(new Aluno
+        public InMemoryAlunoRepository()
         {
-            AlunoId = _nextId++,
-            Nome = "Aluno Teste",
-            Email = "aluno@exemplo.com",
-            Telefone = "(99) 99999-9999",
-            Endereco = "Rua Teste, Numero 123",
-            Complemento = "Casa",
-            Bairro = "Centro",
-            Municipio= "Cidade Teste",
-            Uf = "ST",
-            Cep = "99999-999"
-        });
+            _alunos.Add(new Aluno
+            {
+                AlunoId = _nextId++,
+                Nome = "Aluno Teste",
+                Email = "aluno@exemplo.com",
+                Telefone = "(99) 99999-9999",
+                Endereco = "Rua Teste, Numero 123",
+                Complemento = "Casa",
+                Bairro = "Centro",
+                Municipio = "Cidade Teste",
+                Uf = "ST",
+                Cep = "99999-999"
+            });
         }
-        public Task Create(Aluno aluno, CancellationToken cancellationToken = default)
+
+        public Task CreateAsync(Aluno aluno, CancellationToken cancellationToken = default)
         {
-           lock (_lock)
+            lock (_lock)
             {
                 aluno.AlunoId = _nextId++;
                 _alunos.Add(aluno);
             }
-           return Task.CompletedTask;
+            return Task.CompletedTask;
         }
 
-        public Task Delete(int id, CancellationToken cancellationToken = default)
+        public Task DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
             lock (_lock)
             {
@@ -47,11 +48,11 @@ namespace academico.Repositories
             return Task.CompletedTask;
         }
 
-        public Task Edit(Aluno aluno, CancellationToken cancellationToken = default)
+        public Task EditAsync(Aluno aluno, CancellationToken cancellationToken = default)
         {
             lock (_lock)
             {
-                var existing = _alunos.FirstOrDefault( a => a.AlunoId == aluno.AlunoId);
+                var existing = _alunos.FirstOrDefault(a => a.AlunoId == aluno.AlunoId);
                 if (existing != null)
                 {
                     existing.Nome = aluno.Nome;
@@ -69,7 +70,7 @@ namespace academico.Repositories
             return Task.CompletedTask;
         }
 
-        public Task<bool> Exists(int id, CancellationToken cancellationToken = default)
+        public Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
         {
             bool exists;
             lock (_lock)
@@ -78,10 +79,9 @@ namespace academico.Repositories
             }
 
             return Task.FromResult(exists);
-
         }
 
-        public Task<IEnumerable<Aluno>> GetAll(CancellationToken cancellationToken = default)
+        public Task<IEnumerable<Aluno>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             IEnumerable<Aluno> result;
             lock (_lock)
@@ -92,7 +92,7 @@ namespace academico.Repositories
             return Task.FromResult(result);
         }
 
-        public Task<Aluno?> GetById(int id, CancellationToken cancellationToken = default)
+        public Task<Aluno?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             Aluno? aluno;
             lock (_lock)
