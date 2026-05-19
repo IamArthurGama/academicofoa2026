@@ -11,6 +11,13 @@ builder.Services.AddControllersWithViews();
 var connectionString = builder.Configuration.GetConnectionString("AcademicoDbConnection");
 builder.Services.AddDbContext<AcademicoContext>(options => options.UseSqlServer(connectionString));
 
+// EF Core + SQL Server LocalDB
+builder.Services.AddDbContext<AcademicoContext>(options =>
+ options.UseSqlServer(
+ builder.Configuration.GetConnectionString("Academico")));
+// Repository agora usa o EF (substitui o Memoria)
+builder.Services.AddScoped<IAlunoRepository, AlunoRepositorioEF>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
